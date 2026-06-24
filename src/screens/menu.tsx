@@ -5,8 +5,8 @@ import { useNavigate } from 'react-router'
 
 import { Footer } from '../components/footer'
 import { Pane } from '../components/pane'
-import { theme } from '../util/theme'
 import { loadTopics, type Topic } from '../lib/go'
+import { theme } from '../util/theme'
 
 export function MenuScreen() {
   const navigate = useNavigate()

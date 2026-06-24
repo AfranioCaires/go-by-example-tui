@@ -20,7 +20,7 @@ function stripGoComments(code: string): string {
         return ''
       }
       return match
-    }
+    },
   )
 
   const lines = stripped.split('\n').map((l) => l.trimEnd())

@@ -5,7 +5,14 @@ import { useNavigate, useParams } from 'react-router'
 import { Footer } from '../components/footer'
 import { Pane } from '../components/pane'
 import { useToast } from '../components/toast'
-import { loadLesson, runCode, copyToClipboard, type LessonData } from '../lib/go'
+import {
+  loadLesson,
+  runCode,
+  copyToClipboard,
+  loadTopics,
+  type LessonData,
+  type Topic,
+} from '../lib/go'
 import { syntaxStyle } from '../util/syntax'
 import { theme } from '../util/theme'
 
@@ -16,6 +23,11 @@ export function LessonScreen() {
   const [lesson, setLesson] = useState<LessonData | null>(null)
   const [output, setOutput] = useState<string | null>(null)
   const [running, setRunning] = useState(false)
+  const [topics, setTopics] = useState<Topic[]>([])
+
+  useEffect(() => {
+    loadTopics().then(setTopics)
+  }, [])
 
   useEffect(() => {
     if (!topicId) return
@@ -23,6 +35,11 @@ export function LessonScreen() {
     setOutput(null)
     loadLesson(topicId).then(setLesson)
   }, [topicId])
+
+  const currentIndex = topics.findIndex((t) => t.id === topicId)
+  const prevTopic = currentIndex > 0 ? topics[currentIndex - 1] : null
+  const nextTopic =
+    currentIndex !== -1 && currentIndex < topics.length - 1 ? topics[currentIndex + 1] : null
 
   useKeyboard((key) => {
     if (key.name === 'escape' || key.name === 'q') {
@@ -51,6 +68,19 @@ export function LessonScreen() {
           setOutput('Erro inesperado ao rodar o código.')
           setRunning(false)
         })
+      return
+    }
+    if (key.name === 'left' || key.name === 'p') {
+      if (prevTopic) {
+        navigate(`/lesson/${prevTopic.id}`)
+      }
+      return
+    }
+    if (key.name === 'right' || key.name === 'n') {
+      if (nextTopic) {
+        navigate(`/lesson/${nextTopic.id}`)
+      }
+      return
     }
   })
 
@@ -169,6 +199,7 @@ export function LessonScreen() {
 
       <Footer
         keybinds={[
+          { key: '←/→', label: 'ant/próx' },
           { key: 'c', label: 'copiar' },
           { key: 'r', label: 'executar' },
           { key: 'esc', label: 'voltar' },
