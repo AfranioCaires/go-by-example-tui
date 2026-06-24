@@ -1,3 +1,4 @@
+import { TextAttributes } from '@opentui/core'
 import { useKeyboard } from '@opentui/react'
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router'
@@ -124,8 +125,62 @@ export function LessonScreen() {
               },
             }}
           >
-            <box paddingLeft={1} paddingRight={1} paddingBottom={1}>
-              <markdown content={lesson.description} syntaxStyle={syntaxStyle} />
+            <box paddingLeft={1} paddingRight={1} paddingBottom={1} flexDirection="column" gap={1}>
+              {lesson.description.split(/(```bash[\s\S]*?```)/g).map((part, index) => {
+                if (part.startsWith('```bash')) {
+                  const bashCode = part.replace(/^```bash\n/, '').replace(/\n```$/, '')
+                  return (
+                    <box
+                      key={index}
+                      flexDirection="column"
+                      border={['all']}
+                      borderColor={theme.borderSubtle}
+                      backgroundColor={theme.backgroundElement}
+                      width="100%"
+                      paddingTop={0}
+                      paddingBottom={0}
+                      paddingLeft={0}
+                      paddingRight={0}
+                      marginTop={1}
+                      marginBottom={1}
+                    >
+                      <box
+                        backgroundColor={theme.border}
+                        flexDirection="row"
+                        justifyContent="space-between"
+                        paddingLeft={1}
+                        paddingRight={1}
+                        height={1}
+                      >
+                        <text fg={theme.primary} attributes={TextAttributes.BOLD}>
+                          🛈 Terminal
+                        </text>
+                        <text fg={theme.textMuted}>bash</text>
+                      </box>
+                      <box padding={1} flexDirection="column">
+                        {bashCode.split('\n').map((line, idx) => {
+                          if (line.startsWith('$ ')) {
+                            return (
+                              <box key={idx} flexDirection="row">
+                                <text fg={theme.success} attributes={TextAttributes.BOLD}>
+                                  ${' '}
+                                </text>
+                                <text fg={theme.text}>{line.slice(2)}</text>
+                              </box>
+                            )
+                          }
+                          return (
+                            <text key={idx} fg={theme.textMuted}>
+                              {line}
+                            </text>
+                          )
+                        })}
+                      </box>
+                    </box>
+                  )
+                }
+                return <markdown key={index} content={part} syntaxStyle={syntaxStyle} />
+              })}
             </box>
           </scrollbox>
         </Pane>
