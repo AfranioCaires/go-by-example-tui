@@ -126,59 +126,121 @@ export function LessonScreen() {
             }}
           >
             <box paddingLeft={1} paddingRight={1} paddingBottom={1} flexDirection="column" gap={1}>
-              {lesson.description.split(/(```bash[\s\S]*?```)/g).map((part, index) => {
-                if (part.startsWith('```bash')) {
-                  const bashCode = part.replace(/^```bash\n/, '').replace(/\n```$/, '')
-                  return (
-                    <box
-                      key={index}
-                      flexDirection="column"
-                      border={['all']}
-                      borderColor={theme.borderSubtle}
-                      backgroundColor={theme.backgroundElement}
-                      width="100%"
-                      paddingTop={0}
-                      paddingBottom={0}
-                      paddingLeft={0}
-                      paddingRight={0}
-                      marginTop={1}
-                      marginBottom={1}
-                    >
+              {lesson.description
+                .split(/(```bash[\s\S]*?```|\n---\n|^---\n|(?:\n|^)>[^\n]*(?:\n>[^\n]*)*)/g)
+                .map((part, index) => {
+                  const trimmed = part.trim()
+                  if (trimmed === '') {
+                    return null
+                  }
+                  if (trimmed.startsWith('```bash')) {
+                    const bashCode = trimmed.replace(/^```bash\n/, '').replace(/\n```$/, '')
+                    return (
                       <box
-                        backgroundColor={theme.border}
-                        flexDirection="row"
-                        paddingLeft={1}
-                        paddingRight={1}
-                        height={1}
+                        key={index}
+                        flexDirection="column"
+                        border={['all']}
+                        borderColor={theme.borderSubtle}
+                        backgroundColor={theme.backgroundElement}
+                        width="100%"
+                        paddingTop={0}
+                        paddingBottom={0}
+                        paddingLeft={0}
+                        paddingRight={0}
+                        marginTop={1}
+                        marginBottom={1}
                       >
-                        <text fg={theme.primary} attributes={TextAttributes.BOLD}>
-                          &gt; Terminal
-                        </text>
-                      </box>
-                      <box padding={1} flexDirection="column">
-                        {bashCode.split('\n').map((line, idx) => {
-                          if (line.startsWith('$ ')) {
+                        <box
+                          backgroundColor={theme.border}
+                          flexDirection="row"
+                          paddingLeft={1}
+                          paddingRight={1}
+                          height={1}
+                        >
+                          <text fg={theme.primary} attributes={TextAttributes.BOLD}>
+                            &gt; Terminal
+                          </text>
+                        </box>
+                        <box padding={1} flexDirection="column">
+                          {bashCode.split('\n').map((line, idx) => {
+                            if (line.startsWith('$ ')) {
+                              return (
+                                <box key={idx} flexDirection="row">
+                                  <text fg={theme.success} attributes={TextAttributes.BOLD}>
+                                    ${' '}
+                                  </text>
+                                  <text fg={theme.text}>{line.slice(2)}</text>
+                                </box>
+                              )
+                            }
                             return (
-                              <box key={idx} flexDirection="row">
-                                <text fg={theme.success} attributes={TextAttributes.BOLD}>
-                                  ${' '}
-                                </text>
-                                <text fg={theme.text}>{line.slice(2)}</text>
-                              </box>
+                              <text key={idx} fg={theme.textMuted}>
+                                {line}
+                              </text>
                             )
-                          }
-                          return (
-                            <text key={idx} fg={theme.textMuted}>
-                              {line}
-                            </text>
-                          )
-                        })}
+                          })}
+                        </box>
                       </box>
-                    </box>
-                  )
-                }
-                return <markdown key={index} content={part} syntaxStyle={syntaxStyle} />
-              })}
+                    )
+                  }
+                  if (trimmed === '---') {
+                    return (
+                      <box
+                        key={index}
+                        border={['top']}
+                        borderColor={theme.borderSubtle}
+                        height={1}
+                        width="100%"
+                        marginTop={1}
+                        marginBottom={1}
+                      />
+                    )
+                  }
+                  if (trimmed.startsWith('>')) {
+                    const infoText = trimmed
+                      .split('\n')
+                      .map((line) => line.trim().replace(/^>\s*/, ''))
+                      .join('\n')
+                      .trim()
+                    return (
+                      <box
+                        key={index}
+                        border={['left']}
+                        customBorderChars={{
+                          topLeft: '',
+                          bottomLeft: '',
+                          vertical: '┃',
+                          topRight: '',
+                          bottomRight: '',
+                          horizontal: ' ',
+                          bottomT: '',
+                          topT: '',
+                          cross: '',
+                          leftT: '',
+                          rightT: '',
+                        }}
+                        borderColor={theme.info}
+                        backgroundColor={theme.backgroundElement}
+                        paddingLeft={2}
+                        paddingRight={2}
+                        paddingTop={1}
+                        paddingBottom={1}
+                        marginTop={1}
+                        marginBottom={1}
+                        flexDirection="column"
+                        width="100%"
+                      >
+                        <box flexDirection="row" alignItems="center" marginBottom={1}>
+                          <text fg={theme.info} attributes={TextAttributes.BOLD}>
+                            ℹ Nota
+                          </text>
+                        </box>
+                        <markdown content={infoText} syntaxStyle={syntaxStyle} />
+                      </box>
+                    )
+                  }
+                  return <markdown key={index} content={part} syntaxStyle={syntaxStyle} />
+                })}
             </box>
           </scrollbox>
         </Pane>
