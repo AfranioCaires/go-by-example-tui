@@ -197,11 +197,43 @@ export function LessonScreen() {
                     )
                   }
                   if (trimmed.startsWith('>')) {
-                    const infoText = trimmed
+                    const rawInfoText = trimmed
                       .split('\n')
                       .map((line) => line.trim().replace(/^>\s*/, ''))
                       .join('\n')
                       .trim()
+
+                    let type = 'NOTE'
+                    let contentText = rawInfoText
+
+                    const alertMatch = rawInfoText.match(
+                      /^\[!(NOTE|INFO|WARNING|WARN|CAUTION|IMPORTANT|TIP)\]\s*(?:\n)?([\s\S]*)/i,
+                    )
+                    if (alertMatch) {
+                      type = (alertMatch[1] || 'NOTE').toUpperCase()
+                      contentText = (alertMatch[2] || '').trim()
+                    }
+
+                    let label = '[i] Nota'
+                    let color = theme.info
+
+                    if (type === 'WARNING' || type === 'WARN') {
+                      label = '[!] Atenção'
+                      color = theme.warning
+                    }
+                    if (type === 'CAUTION') {
+                      label = '[X] Cuidado'
+                      color = theme.error
+                    }
+                    if (type === 'IMPORTANT') {
+                      label = '[!] Importante'
+                      color = theme.primary
+                    }
+                    if (type === 'TIP') {
+                      label = '[*] Dica'
+                      color = theme.success
+                    }
+
                     return (
                       <box
                         key={index}
@@ -219,7 +251,7 @@ export function LessonScreen() {
                           leftT: '',
                           rightT: '',
                         }}
-                        borderColor={theme.info}
+                        borderColor={color}
                         backgroundColor={theme.backgroundElement}
                         paddingLeft={2}
                         paddingRight={2}
@@ -231,11 +263,11 @@ export function LessonScreen() {
                         width="100%"
                       >
                         <box flexDirection="row" alignItems="center" marginBottom={1}>
-                          <text fg={theme.info} attributes={TextAttributes.BOLD}>
-                            ℹ Nota
+                          <text fg={color} attributes={TextAttributes.BOLD}>
+                            {label}
                           </text>
                         </box>
-                        <markdown content={infoText} syntaxStyle={syntaxStyle} />
+                        <markdown content={contentText} syntaxStyle={syntaxStyle} />
                       </box>
                     )
                   }
