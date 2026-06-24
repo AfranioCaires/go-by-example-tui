@@ -1,0 +1,179 @@
+import { useKeyboard } from '@opentui/react'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router'
+
+import { Footer } from '../components/footer'
+import { Pane } from '../components/pane'
+import { useToast } from '../components/toast'
+import { loadLesson, runCode, copyToClipboard, type LessonData } from '../lib/go'
+import { syntaxStyle } from '../util/syntax'
+import { theme } from '../util/theme'
+
+export function LessonScreen() {
+  const { topicId } = useParams<{ topicId: string }>()
+  const navigate = useNavigate()
+  const toast = useToast()
+  const [lesson, setLesson] = useState<LessonData | null>(null)
+  const [output, setOutput] = useState<string | null>(null)
+  const [running, setRunning] = useState(false)
+
+  useEffect(() => {
+    if (!topicId) return
+    setLesson(null)
+    setOutput(null)
+    loadLesson(topicId).then(setLesson)
+  }, [topicId])
+
+  useKeyboard((key) => {
+    if (key.name === 'escape' || key.name === 'q') {
+      navigate('/menu')
+      return
+    }
+    if (key.name === 'c' && lesson) {
+      void copyToClipboard(lesson.code).then(() => {
+        toast.show({
+          variant: 'success',
+          message: 'Código copiado!',
+          duration: 2000,
+        })
+      })
+      return
+    }
+    if (key.name === 'r' && lesson && !running) {
+      setRunning(true)
+      setOutput(null)
+      runCode(lesson.code)
+        .then((result) => {
+          setOutput(result)
+          setRunning(false)
+        })
+        .catch(() => {
+          setOutput('Erro inesperado ao rodar o código.')
+          setRunning(false)
+        })
+    }
+  })
+
+  if (!lesson) {
+    return (
+      <box
+        flexGrow={1}
+        alignItems="center"
+        justifyContent="center"
+        backgroundColor={theme.background}
+      >
+        <text fg={theme.textMuted}>Carregando...</text>
+      </box>
+    )
+  }
+
+  const showOutput = output !== null || running
+
+  return (
+    <box flexDirection="column" flexGrow={1} backgroundColor={theme.background}>
+      <box flexDirection="row" flexGrow={1} padding={1} gap={1}>
+        <Pane
+          title={lesson.title}
+          width="30%"
+          borderColor={theme.border}
+          backgroundColor={theme.backgroundPanel}
+        >
+          <scrollbox
+            flexGrow={1}
+            focused={false}
+            style={{
+              rootOptions: { backgroundColor: theme.backgroundPanel },
+              wrapperOptions: { backgroundColor: theme.backgroundPanel },
+              viewportOptions: { backgroundColor: theme.backgroundPanel },
+              contentOptions: { backgroundColor: theme.backgroundPanel },
+              scrollbarOptions: {
+                trackOptions: {
+                  foregroundColor: theme.border,
+                  backgroundColor: theme.backgroundPanel,
+                },
+              },
+            }}
+          >
+            <box paddingLeft={1} paddingRight={1} paddingBottom={1}>
+              <markdown content={lesson.description} syntaxStyle={syntaxStyle} />
+            </box>
+          </scrollbox>
+        </Pane>
+
+        <box width="70%" flexDirection="column" flexGrow={1} gap={1}>
+          <Pane
+            title="Código"
+            borderColor={theme.border}
+            backgroundColor={theme.backgroundElement}
+            flexGrow={1}
+          >
+            <scrollbox
+              flexGrow={1}
+              focused={true}
+              style={{
+                rootOptions: { backgroundColor: theme.backgroundElement },
+                wrapperOptions: { backgroundColor: theme.backgroundElement },
+                viewportOptions: { backgroundColor: theme.backgroundElement },
+                contentOptions: { backgroundColor: theme.backgroundElement },
+                scrollbarOptions: {
+                  trackOptions: {
+                    foregroundColor: theme.border,
+                    backgroundColor: theme.backgroundElement,
+                  },
+                },
+              }}
+            >
+              <box flexGrow={1} paddingLeft={1} paddingRight={1}>
+                <line-number fg={theme.textMuted} paddingRight={1}>
+                  <code content={lesson.code} filetype="go" syntaxStyle={syntaxStyle} />
+                </line-number>
+              </box>
+            </scrollbox>
+          </Pane>
+
+          {showOutput && (
+            <Pane
+              title="Output"
+              borderColor={theme.success}
+              backgroundColor={theme.backgroundElement}
+              height="30%"
+            >
+              <scrollbox
+                flexGrow={1}
+                focused={false}
+                style={{
+                  rootOptions: { backgroundColor: theme.backgroundElement },
+                  wrapperOptions: { backgroundColor: theme.backgroundElement },
+                  viewportOptions: { backgroundColor: theme.backgroundElement },
+                  contentOptions: { backgroundColor: theme.backgroundElement },
+                  scrollbarOptions: {
+                    trackOptions: {
+                      foregroundColor: theme.border,
+                      backgroundColor: theme.backgroundElement,
+                    },
+                  },
+                }}
+              >
+                <box paddingLeft={1} paddingRight={1} paddingBottom={1}>
+                  {running ? (
+                    <text fg={theme.textMuted}>Executando...</text>
+                  ) : (
+                    <text fg={theme.success}>{output}</text>
+                  )}
+                </box>
+              </scrollbox>
+            </Pane>
+          )}
+        </box>
+      </box>
+
+      <Footer
+        keybinds={[
+          { key: 'c', label: 'copiar' },
+          { key: 'r', label: 'executar' },
+          { key: 'esc', label: 'voltar' },
+        ]}
+      />
+    </box>
+  )
+}
