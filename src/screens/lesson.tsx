@@ -147,15 +147,13 @@ export function LessonScreen() {
                       <box
                         backgroundColor={theme.border}
                         flexDirection="row"
-                        justifyContent="space-between"
                         paddingLeft={1}
                         paddingRight={1}
                         height={1}
                       >
                         <text fg={theme.primary} attributes={TextAttributes.BOLD}>
-                          🛈 Terminal
+                          &gt; Terminal
                         </text>
-                        <text fg={theme.textMuted}>bash</text>
                       </box>
                       <box padding={1} flexDirection="column">
                         {bashCode.split('\n').map((line, idx) => {
