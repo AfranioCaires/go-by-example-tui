@@ -12,38 +12,6 @@ export interface Topic {
   description: string
 }
 
-function stripGoComments(code: string): string {
-  const stripped = code.replace(
-    /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`[^`]*`|\/\*[\s\S]*?\*\/|\/\/.*)/g,
-    (match) => {
-      if (match.startsWith('//') || match.startsWith('/*')) {
-        return ''
-      }
-      return match
-    },
-  )
-
-  const lines = stripped.split('\n').map((l) => l.trimEnd())
-  const result: string[] = []
-  let lastWasEmpty = false
-
-  for (const line of lines) {
-    const isEmpty = line.trim() === ''
-    if (isEmpty) {
-      if (!lastWasEmpty) {
-        result.push('')
-        lastWasEmpty = true
-      }
-    }
-    if (!isEmpty) {
-      result.push(line)
-      lastWasEmpty = false
-    }
-  }
-
-  return result.join('\n').trim()
-}
-
 export async function copyToClipboard(text: string): Promise<void> {
   const proc = Bun.spawn(['pbcopy'], {
     stdin: 'pipe',
@@ -144,7 +112,7 @@ export async function loadLesson(slug: string): Promise<LessonData> {
 
   const goFile = Bun.file(`lessons/${slug}/${name}.go`)
   const rawCode = await goFile.text()
-  const code = stripGoComments(rawCode)
+  const code = rawCode.trim()
 
   const titleEndIndex = titleLine ? text.indexOf(titleLine) + titleLine.length : 0
   const description = text.substring(titleEndIndex).trim()
