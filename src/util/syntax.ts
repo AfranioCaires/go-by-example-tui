@@ -16,6 +16,8 @@ export const syntaxStyle = SyntaxStyle.fromStyles({
   'markup.heading.3': { fg: theme.primary, bold: true },
   'markup.list': { fg: theme.success },
   'markup.raw': { fg: theme.syntaxString },
+  'markup.table': { fg: theme.border },
+  'markup.table.border': { fg: theme.border },
 
   default: { fg: theme.text },
 })

@@ -17,6 +17,126 @@ import {
 import { syntaxStyle } from '../util/syntax'
 import { theme } from '../util/theme'
 
+function renderBashBlock(bashCode: string, index: number) {
+  return (
+    <box
+      key={index}
+      flexDirection="column"
+      backgroundColor={theme.backgroundElement}
+      width="100%"
+      paddingTop={0}
+      paddingBottom={0}
+      paddingLeft={0}
+      paddingRight={0}
+    >
+      <box
+        backgroundColor={theme.border}
+        flexDirection="row"
+        paddingLeft={1}
+        paddingRight={1}
+        height={1}
+      >
+        <text fg={theme.primary} attributes={TextAttributes.BOLD}>
+          &gt; Terminal
+        </text>
+      </box>
+      <box padding={1} flexDirection="column">
+        {bashCode.split('\n').map((line, idx) => {
+          if (line.startsWith('$ ')) {
+            return (
+              <box key={idx} flexDirection="row">
+                <text fg={theme.success} attributes={TextAttributes.BOLD}>
+                  ${' '}
+                </text>
+                <text fg={theme.text}>{line.slice(2)}</text>
+              </box>
+            )
+          }
+          return (
+            <text key={idx} fg={theme.textMuted}>
+              {line}
+            </text>
+          )
+        })}
+      </box>
+    </box>
+  )
+}
+
+function renderAlertBlock(trimmed: string, index: number) {
+  const rawInfoText = trimmed
+    .split('\n')
+    .map((line) => line.trim().replace(/^>\s*/, ''))
+    .join('\n')
+    .trim()
+
+  let type = 'NOTE'
+  let contentText = rawInfoText
+
+  const alertMatch = rawInfoText.match(
+    /^\[!(NOTE|INFO|WARNING|WARN|CAUTION|IMPORTANT|TIP)\]\s*(?:\n)?([\s\S]*)/i,
+  )
+  if (alertMatch) {
+    type = (alertMatch[1] || 'NOTE').toUpperCase()
+    contentText = (alertMatch[2] || '').trim()
+  }
+
+  let label = '[i] Nota'
+  let color = theme.info
+
+  if (type === 'WARNING' || type === 'WARN') {
+    label = '[!] Atenção'
+    color = theme.warning
+  }
+  if (type === 'CAUTION') {
+    label = '[X] Cuidado'
+    color = theme.error
+  }
+  if (type === 'IMPORTANT') {
+    label = '[!] Importante'
+    color = theme.primary
+  }
+  if (type === 'TIP') {
+    label = '[*] Dica'
+    color = theme.success
+  }
+
+  return (
+    <box
+      key={index}
+      border={['left']}
+      customBorderChars={{
+        topLeft: '',
+        bottomLeft: '',
+        vertical: '┃',
+        topRight: '',
+        bottomRight: '',
+        horizontal: ' ',
+        bottomT: '',
+        topT: '',
+        cross: '',
+        leftT: '',
+        rightT: '',
+      }}
+      borderColor={color}
+      backgroundColor={theme.backgroundElement}
+      paddingLeft={2}
+      paddingRight={2}
+      paddingTop={1}
+      paddingBottom={1}
+      flexDirection="column"
+      width="100%"
+    >
+      <box flexDirection="row" alignItems="center" marginBottom={1}>
+        <text fg={color} attributes={TextAttributes.BOLD}>
+          {label}
+        </text>
+      </box>
+      <markdown content={contentText} syntaxStyle={syntaxStyle} />
+    </box>
+  )
+}
+
 export function LessonScreen() {
   const { topicId } = useParams<{ topicId: string }>()
   const navigate = useNavigate()
@@ -135,53 +255,7 @@ export function LessonScreen() {
                   }
                   if (trimmed.startsWith('```bash')) {
                     const bashCode = trimmed.replace(/^```bash\n/, '').replace(/\n```$/, '')
-                    return (
-                      <box
-                        key={index}
-                        flexDirection="column"
-                        border={['all']}
-                        borderColor={theme.borderSubtle}
-                        backgroundColor={theme.backgroundElement}
-                        width="100%"
-                        paddingTop={0}
-                        paddingBottom={0}
-                        paddingLeft={0}
-                        paddingRight={0}
-                        marginTop={1}
-                        marginBottom={1}
-                      >
-                        <box
-                          backgroundColor={theme.border}
-                          flexDirection="row"
-                          paddingLeft={1}
-                          paddingRight={1}
-                          height={1}
-                        >
-                          <text fg={theme.primary} attributes={TextAttributes.BOLD}>
-                            &gt; Terminal
-                          </text>
-                        </box>
-                        <box padding={1} flexDirection="column">
-                          {bashCode.split('\n').map((line, idx) => {
-                            if (line.startsWith('$ ')) {
-                              return (
-                                <box key={idx} flexDirection="row">
-                                  <text fg={theme.success} attributes={TextAttributes.BOLD}>
-                                    ${' '}
-                                  </text>
-                                  <text fg={theme.text}>{line.slice(2)}</text>
-                                </box>
-                              )
-                            }
-                            return (
-                              <text key={idx} fg={theme.textMuted}>
-                                {line}
-                              </text>
-                            )
-                          })}
-                        </box>
-                      </box>
-                    )
+                    return renderBashBlock(bashCode, index)
                   }
                   if (trimmed === '---') {
                     return (
@@ -191,85 +265,11 @@ export function LessonScreen() {
                         borderColor={theme.borderSubtle}
                         height={1}
                         width="100%"
-                        marginTop={1}
-                        marginBottom={1}
                       />
                     )
                   }
                   if (trimmed.startsWith('>')) {
-                    const rawInfoText = trimmed
-                      .split('\n')
-                      .map((line) => line.trim().replace(/^>\s*/, ''))
-                      .join('\n')
-                      .trim()
-
-                    let type = 'NOTE'
-                    let contentText = rawInfoText
-
-                    const alertMatch = rawInfoText.match(
-                      /^\[!(NOTE|INFO|WARNING|WARN|CAUTION|IMPORTANT|TIP)\]\s*(?:\n)?([\s\S]*)/i,
-                    )
-                    if (alertMatch) {
-                      type = (alertMatch[1] || 'NOTE').toUpperCase()
-                      contentText = (alertMatch[2] || '').trim()
-                    }
-
-                    let label = '[i] Nota'
-                    let color = theme.info
-
-                    if (type === 'WARNING' || type === 'WARN') {
-                      label = '[!] Atenção'
-                      color = theme.warning
-                    }
-                    if (type === 'CAUTION') {
-                      label = '[X] Cuidado'
-                      color = theme.error
-                    }
-                    if (type === 'IMPORTANT') {
-                      label = '[!] Importante'
-                      color = theme.primary
-                    }
-                    if (type === 'TIP') {
-                      label = '[*] Dica'
-                      color = theme.success
-                    }
-
-                    return (
-                      <box
-                        key={index}
-                        border={['left']}
-                        customBorderChars={{
-                          topLeft: '',
-                          bottomLeft: '',
-                          vertical: '┃',
-                          topRight: '',
-                          bottomRight: '',
-                          horizontal: ' ',
-                          bottomT: '',
-                          topT: '',
-                          cross: '',
-                          leftT: '',
-                          rightT: '',
-                        }}
-                        borderColor={color}
-                        backgroundColor={theme.backgroundElement}
-                        paddingLeft={2}
-                        paddingRight={2}
-                        paddingTop={1}
-                        paddingBottom={1}
-                        marginTop={1}
-                        marginBottom={1}
-                        flexDirection="column"
-                        width="100%"
-                      >
-                        <box flexDirection="row" alignItems="center" marginBottom={1}>
-                          <text fg={color} attributes={TextAttributes.BOLD}>
-                            {label}
-                          </text>
-                        </box>
-                        <markdown content={contentText} syntaxStyle={syntaxStyle} />
-                      </box>
-                    )
+                    return renderAlertBlock(trimmed, index)
                   }
                   return <markdown key={index} content={part} syntaxStyle={syntaxStyle} />
                 })}

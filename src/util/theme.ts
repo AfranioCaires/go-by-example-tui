@@ -9,7 +9,7 @@ export const theme = {
   textMuted: RGBA.fromHex('#808080'),
 
   border: RGBA.fromHex('#484848'),
-  borderSubtle: RGBA.fromHex('#3c3c3c'),
+  borderSubtle: RGBA.fromHex('#484848'),
 
   primary: RGBA.fromHex('#fab283'),
   success: RGBA.fromHex('#7fd88f'),
