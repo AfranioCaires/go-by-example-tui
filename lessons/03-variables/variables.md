@@ -53,3 +53,20 @@ Variáveis declaradas sem um valor inicial recebem o **valor zero** corresponden
 - `int`: `0`
 - `string`: `""`
 - ponteiros: `nil`
+
+## Constantes
+
+Para trabalhar com constantes, basta utilizar o `const`:
+
+```go
+const name string = "Arthur Morgan"
+```
+
+> [!IMPORTANT]
+> Em Go, const não usa :=.
+>
+> ```go
+> const name := "Arthur Morgan"
+> ```
+>
+> resulta em erro.
