@@ -44,3 +44,22 @@ A linguagem possui outros tipos além dos do dia-a-dia:
 
 > [!NOTE]
 > Os tipos marcados com `*` têm tamanho variável: em sistemas de 32 bits valem 32 bits, em sistemas de 64 bits valem 64 bits. A maioria dos ambientes hoje roda em 64 bits.
+
+## Type casting
+
+Digamos que temos um tipo `int` e queremos usá-lo, em algum lugar que espera um tipo de um float64. Como fazemos essa transformação?
+É bem simples: Considere um tipo qualquer `T`, basta fazer `T()` envolvendo o tipo que você deseja transformar.
+
+```go
+fmt.Println(float64(27))
+fmt.Println(int(19.90))
+fmt.Println(string(rune(65)))
+fmt.Println(int(byte('G')))
+```
+
+> [!NOTE]
+> `int("10")` não funciona em Go. Type casting só converte entre tipos numéricos compatíveis. Para converter uma `string` para `int` você precisa do pacote `strconv`:
+>
+> ```go
+> n, err := strconv.Atoi("10")
+> ```
